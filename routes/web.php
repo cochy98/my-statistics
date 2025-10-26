@@ -25,6 +25,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Rotte legacy per compatibilità
     Route::get('/fuel-stats', [FuelLogController::class, 'index'])->name('fuel.stats');
+    
+    // Rotte per gestione veicolo preferito
+    Route::post('/vehicles/{vehicle}/set-preferred', [FuelLogController::class, 'setPreferredVehicle'])->name('vehicles.set-preferred');
+    Route::post('/remove-preferred-vehicle', [FuelLogController::class, 'removePreferredVehicle'])->name('vehicles.remove-preferred');
 });
 
 require __DIR__.'/settings.php';

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, Car, Edit, Trash2, Plus, Fuel, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Car, Edit, Trash2, Plus, Fuel, CheckCircle, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -189,6 +189,12 @@ export default function VehicleShow({ vehicle, flash }: VehicleShowProps) {
                         <p className="text-muted-foreground">Targa: {vehicle.plate_number}</p>
                     </div>
                     <div className="flex gap-2">
+                        <Link href={`/fuel-stats?vehicle_id=${vehicle.id}`}>
+                            <Button variant="outline">
+                                <TrendingUp className="w-4 h-4 mr-2" />
+                                Statistiche
+                            </Button>
+                        </Link>
                         <Link href={`/vehicles/${vehicle.id}/edit`}>
                             <Button variant="outline">
                                 <Edit className="w-4 h-4 mr-2" />

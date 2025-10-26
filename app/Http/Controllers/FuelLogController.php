@@ -17,14 +17,52 @@ class FuelLogController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $vehicle = $user->vehicles()->with('fuelLogs')->first();
+        $vehicles = $user->vehicles()->with('fuelLogs')->get();
+        
+        // Determina quale veicolo visualizzare
+        $vehicleId = $request->query('vehicle_id');
+        
+        // Se non c'è vehicle_id nei query params, prova a recuperarlo dai cookie
+        if (!$vehicleId) {
+            $vehicleId = $request->cookie('preferred_vehicle_id');
+        }
+        
+        $vehicle = null;
+        $fuelLogs = collect();
+        $isPreferredVehicle = false;
+        $preferredVehicleId = $request->cookie('preferred_vehicle_id');
+        
+        if ($vehicleId) {
+            $vehicle = $vehicles->find($vehicleId);
+            if ($vehicle) {
+                $fuelLogs = $vehicle->fuelLogs()->orderBy('date')->get();
+                // Controlla se questo veicolo è quello preferito salvato nei cookie
+                $isPreferredVehicle = $preferredVehicleId == $vehicle->id;
+            }
+        }
+
+        // Aggiungi informazioni sui veicoli preferiti
+        $vehiclesWithPreferred = $vehicles->map(function ($v) use ($preferredVehicleId) {
+            return [
+                'id' => $v->id,
+                'model' => $v->model,
+                'plate_number' => $v->plate_number,
+                'is_preferred' => $preferredVehicleId == $v->id
+            ];
+        });
 
         return Inertia::render('FuelStats', [
             'vehicle' => $vehicle,
-            'fuelLogs' => $vehicle?->fuelLogs()->orderBy('date')->get()
+            'vehicles' => $vehiclesWithPreferred,
+            'fuelLogs' => $fuelLogs,
+            'isPreferredVehicle' => $isPreferredVehicle,
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+            ]
         ]);
     }
 
@@ -122,5 +160,28 @@ class FuelLogController extends Controller
 
         return redirect()->route('vehicles.show', $vehicle)
             ->with('success', 'Rifornimento eliminato con successo!');
+    }
+
+    /**
+     * Imposta il veicolo preferito per le statistiche
+     */
+    public function setPreferredVehicle(Request $request, Vehicle $vehicle)
+    {
+        // Verifica che il veicolo appartenga all'utente autenticato
+        $this->authorize('view', $vehicle);
+
+        return redirect()->route('fuel.stats')
+            ->withCookie(cookie('preferred_vehicle_id', $vehicle->id, 60 * 24 * 30)) // 30 giorni
+            ->with('success', "Veicolo {$vehicle->model} impostato come preferito per le statistiche!");
+    }
+
+    /**
+     * Rimuove il veicolo preferito per le statistiche
+     */
+    public function removePreferredVehicle(Request $request)
+    {
+        return redirect()->route('fuel.stats')
+            ->withCookie(cookie('preferred_vehicle_id', null, -1)) // Rimuove il cookie
+            ->with('success', "Veicolo preferito rimosso dalle statistiche!");
     }
 }

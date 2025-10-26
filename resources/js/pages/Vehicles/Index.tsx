@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Plus, Car, Edit, Trash2, Eye, CheckCircle } from 'lucide-react';
+import { Plus, Car, Edit, Trash2, Eye, CheckCircle, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -97,12 +97,20 @@ export default function VehiclesIndex({ vehicles, flash }: VehiclesIndexProps) {
                         <h1 className="text-3xl font-bold">I Miei Veicoli</h1>
                         <p className="text-muted-foreground">Gestisci i tuoi veicoli e i loro consumi</p>
                     </div>
-                    <Link href="/vehicles/create">
-                        <Button>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Aggiungi Veicolo
-                        </Button>
-                    </Link>
+                    <div className="flex gap-2">
+                        <Link href="/fuel-stats">
+                            <Button variant="outline">
+                                <TrendingUp className="w-4 h-4 mr-2" />
+                                Statistiche Consumi
+                            </Button>
+                        </Link>
+                        <Link href="/vehicles/create">
+                            <Button>
+                                <Plus className="w-4 h-4 mr-2" />
+                                Aggiungi Veicolo
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
 
                 {vehicles.length === 0 ? (
