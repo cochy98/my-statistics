@@ -33,7 +33,7 @@ services:
             MYSQL_PASSWORD: '${DB_PASSWORD}'
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
         volumes:
-            - 'sail-mysql:/var/lib/mysql'
+            - 'react-starter-kit_sail-mysql:/var/lib/mysql'
         networks:
             - sail
         healthcheck:
@@ -63,5 +63,5 @@ networks:
         name: app_network
         driver: bridge
 volumes:
-    sail-mysql:
-        driver: local
+    react-starter-kit_sail-mysql:
+        external: true
