@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Car, Edit, Trash2, Plus, Fuel } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ArrowLeft, Car, Edit, Trash2, Plus, Fuel, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -33,6 +34,10 @@ interface Vehicle {
 
 interface VehicleShowProps {
     vehicle: Vehicle;
+    flash?: {
+        success?: string;
+        error?: string;
+    };
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -50,10 +55,37 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function VehicleShow({ vehicle }: VehicleShowProps) {
+export default function VehicleShow({ vehicle, flash }: VehicleShowProps) {
     // Debug: controlla i dati ricevuti
     console.log('Vehicle data received:', vehicle);
     console.log('Fuel logs:', vehicle.fuel_logs);
+
+    // Gestione sicura dei dati
+    const fuelLogs = vehicle.fuel_logs || [];
+    const hasFuelLogs = fuelLogs.length > 0;
+
+    // Gestione alert di successo
+    const [showSuccessAlert, setShowSuccessAlert] = useState(!!flash?.success);
+    const [showErrorAlert, setShowErrorAlert] = useState(!!flash?.error);
+
+    // Auto-dismiss degli alert dopo 5 secondi
+    useEffect(() => {
+        if (flash?.success) {
+            const timer = setTimeout(() => {
+                setShowSuccessAlert(false);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [flash?.success]);
+
+    useEffect(() => {
+        if (flash?.error) {
+            const timer = setTimeout(() => {
+                setShowErrorAlert(false);
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [flash?.error]);
 
     const handleDelete = () => {
         router.delete(`/vehicles/${vehicle.id}`, {
@@ -126,6 +158,25 @@ export default function VehicleShow({ vehicle }: VehicleShowProps) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`${vehicle.model} - Dettagli`} />
             <PageMain>
+                {/* Alert di successo */}
+                {showSuccessAlert && flash?.success && (
+                    <Alert className="mb-6 border-green-200 bg-green-50 text-green-800">
+                        <CheckCircle className="h-4 w-4" />
+                        <AlertDescription>
+                            {flash.success}
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                {/* Alert di errore */}
+                {showErrorAlert && flash?.error && (
+                    <Alert variant="destructive" className="mb-6">
+                        <AlertDescription>
+                            {flash.error}
+                        </AlertDescription>
+                    </Alert>
+                )}
+
                 <div className="flex items-center gap-4 mb-6">
                     <Link href="/vehicles">
                         <Button variant="outline" size="sm">
@@ -221,7 +272,7 @@ export default function VehicleShow({ vehicle }: VehicleShowProps) {
                                         <CardTitle>Rifornimenti</CardTitle>
                                         <CardDescription>Cronologia dei rifornimenti</CardDescription>
                                     </div>
-                                    <Link href="/fuel-logs/create">
+                                    <Link href={`/fuel-logs/create?vehicle_id=${vehicle.id}`}>
                                         <Button size="sm">
                                             <Plus className="w-4 h-4 mr-2" />
                                             Aggiungi Rifornimento
@@ -237,7 +288,7 @@ export default function VehicleShow({ vehicle }: VehicleShowProps) {
                                         <p className="text-muted-foreground mb-4">
                                             Inizia tracciando i tuoi primi rifornimenti per questo veicolo.
                                         </p>
-                                        <Link href="/fuel-logs/create">
+                                        <Link href={`/fuel-logs/create?vehicle_id=${vehicle.id}`}>
                                             <Button>
                                                 <Plus className="w-4 h-4 mr-2" />
                                                 Aggiungi Primo Rifornimento

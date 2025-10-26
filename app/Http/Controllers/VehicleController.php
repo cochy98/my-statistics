@@ -61,7 +61,11 @@ class VehicleController extends Controller
         }]);
 
         return Inertia::render('Vehicles/Show', [
-            'vehicle' => $vehicle
+            'vehicle' => $vehicle,
+            'flash' => [
+                'success' => session('success'),
+                'error' => session('error'),
+            ]
         ]);
     }
 
