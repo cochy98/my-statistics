@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { BookOpen, LayoutGrid, Car, BarChart3, Plus } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -23,23 +23,28 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Statistica consumi',
+        title: 'I Miei Veicoli',
+        href: '/vehicles',
+        icon: Car,
+    },
+    {
+        title: 'Nuovo Rifornimento',
+        href: '/fuel-logs/create',
+        icon: Plus,
+    },
+    {
+        title: 'Statistiche Consumi',
         href: '/fuel-stats',
-        icon: LayoutGrid,
+        icon: BarChart3,
     },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
+        title: 'Impostazioni',
+        href: '/settings/profile',
         icon: BookOpen,
-    },
+    }
 ];
 
 export function AppSidebar() {

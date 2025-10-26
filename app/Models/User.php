@@ -55,4 +55,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Vehicle::class);
     }
+
+    // Relazione: un utente può avere molti fuel logs attraverso i suoi veicoli
+    public function fuelLogs()
+    {
+        return $this->hasManyThrough(FuelLog::class, Vehicle::class);
+    }
 }

@@ -18,6 +18,11 @@ class FuelLog extends Model
         'km_travelled',
     ];
 
+    protected $appends = [
+        'km_per_liter',
+        'euro_per_km',
+    ];
+
     // Relazione: un log di rifornimento appartiene a un veicolo
     public function vehicle()
     {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\FuelLogController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -16,6 +17,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
+    // Rotte per i veicoli
+    Route::resource('vehicles', VehicleController::class);
+    
+    // Rotte per i fuel logs
+    Route::resource('fuel-logs', FuelLogController::class);
+    
+    // Rotte legacy per compatibilità
     Route::get('/fuel-stats', [FuelLogController::class, 'index'])->name('fuel.stats');
 });
 
