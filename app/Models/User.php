@@ -61,4 +61,10 @@ class User extends Authenticatable
     {
         return $this->hasManyThrough(FuelLog::class, Vehicle::class);
     }
+
+    // Relazione: un utente può avere molte spese
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class);
+    }
 }
