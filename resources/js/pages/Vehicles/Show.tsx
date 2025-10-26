@@ -19,6 +19,7 @@ interface FuelLog {
     km_travelled: number | null;
     km_per_liter: number | null;
     euro_per_km: number | null;
+    notes: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -56,10 +57,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function VehicleShow({ vehicle, flash }: VehicleShowProps) {
-    // Debug: controlla i dati ricevuti
-    console.log('Vehicle data received:', vehicle);
-    console.log('Fuel logs:', vehicle.fuel_logs);
-
     // Gestione sicura dei dati
     const fuelLogs = vehicle.fuel_logs || [];
     const hasFuelLogs = fuelLogs.length > 0;
@@ -318,6 +315,13 @@ export default function VehicleShow({ vehicle, flash }: VehicleShowProps) {
                                                             </div>
                                                         )}
                                                     </div>
+                                                    {log.notes && (
+                                                        <div className="mt-2">
+                                                            <p className="text-sm text-gray-600 italic">
+                                                                "{log.notes}"
+                                                            </p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="flex gap-2">
                                                     <Link href={`/fuel-logs/${log.id}/edit`}>

@@ -16,6 +16,7 @@ class FuelLog extends Model
         'liters',
         'price_per_liter',
         'km_travelled',
+        'notes',
     ];
 
     protected $appends = [

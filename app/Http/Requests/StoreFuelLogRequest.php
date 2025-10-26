@@ -28,6 +28,7 @@ class StoreFuelLogRequest extends FormRequest
             'liters' => ['required', 'numeric', 'min:0.01'],
             'price_per_liter' => ['nullable', 'numeric', 'min:0.001'],
             'km_travelled' => ['nullable', 'numeric', 'min:0.1'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ];
     }
 
@@ -52,6 +53,8 @@ class StoreFuelLogRequest extends FormRequest
             'price_per_liter.min' => 'Il prezzo al litro deve essere maggiore di 0.',
             'km_travelled.numeric' => 'I km percorsi devono essere un numero.',
             'km_travelled.min' => 'I km percorsi devono essere maggiori di 0.',
+            'notes.string' => 'Le note devono essere testo.',
+            'notes.max' => 'Le note non possono superare i 1000 caratteri.',
         ];
     }
 }

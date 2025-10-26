@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Fuel } from 'lucide-react';
 import { Link } from '@inertiajs/react';
@@ -25,6 +26,7 @@ interface FuelLog {
     liters: number;
     price_per_liter: number | null;
     km_travelled: number | null;
+    notes: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -57,6 +59,7 @@ export default function FuelLogEdit({ fuelLog, vehicles }: FuelLogEditProps) {
         liters: fuelLog.liters.toString(),
         price_per_liter: fuelLog.price_per_liter?.toString() || '',
         km_travelled: fuelLog.km_travelled?.toString() || '',
+        notes: fuelLog.notes || '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -209,6 +212,21 @@ export default function FuelLogEdit({ fuelLog, vehicles }: FuelLogEditProps) {
                                         <p className="text-sm text-red-500">{errors.km_travelled}</p>
                                     )}
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="notes">Note (opzionale)</Label>
+                                <Textarea
+                                    id="notes"
+                                    value={data.notes}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('notes', e.target.value)}
+                                    placeholder="Aggiungi note sul rifornimento..."
+                                    className={errors.notes ? 'border-red-500' : ''}
+                                    rows={3}
+                                />
+                                {errors.notes && (
+                                    <p className="text-sm text-red-500">{errors.notes}</p>
+                                )}
                             </div>
 
                             <div className="flex gap-4 pt-4">

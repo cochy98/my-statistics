@@ -19,6 +19,7 @@ return new class extends Migration
             $table->decimal('liters', 8, 2)->nullable(); // Litri
             $table->decimal('price_per_liter', 5, 3)->nullable(); // Prezzo al litro (€)
             $table->decimal('km_travelled', 8, 1)->nullable(); // KM percorsi
+            $table->text('notes')->nullable(); // Note
             $table->timestamps();
         });
     }

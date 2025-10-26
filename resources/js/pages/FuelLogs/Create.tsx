@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
     Select,
     SelectContent,
@@ -61,6 +62,7 @@ export default function FuelLogCreate({
         liters: '',
         price_per_liter: '',
         km_travelled: '',
+        notes: '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -284,6 +286,25 @@ export default function FuelLogCreate({
                                         </p>
                                     )}
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="notes">Note (opzionale)</Label>
+                                <Textarea
+                                    id="notes"
+                                    value={data.notes}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('notes', e.target.value)}
+                                    placeholder="Aggiungi note sul rifornimento..."
+                                    className={
+                                        errors.notes ? 'border-red-500' : ''
+                                    }
+                                    rows={3}
+                                />
+                                {errors.notes && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.notes}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="flex gap-4 pt-4">
