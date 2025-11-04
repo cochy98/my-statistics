@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, LayoutGrid, Car, BarChart3, Plus } from 'lucide-react';
+import { BookOpen, LayoutGrid, Car, BarChart3, Plus, Receipt, TrendingUp } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -36,6 +36,21 @@ const mainNavItems: NavItem[] = [
         title: 'Statistiche Consumi',
         href: '/fuel-stats',
         icon: BarChart3,
+    },
+    {
+        title: 'Le Mie Spese',
+        href: '/expenses',
+        icon: Receipt,
+    },
+    {
+        title: 'Nuova Spesa',
+        href: '/expenses/create',
+        icon: Plus,
+    },
+    {
+        title: 'Statistiche Spese',
+        href: '/expense-stats',
+        icon: TrendingUp,
     },
 ];
 

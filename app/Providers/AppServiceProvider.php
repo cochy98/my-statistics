@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Expense;
 use App\Models\FuelLog;
 use App\Models\Vehicle;
+use App\Policies\ExpensePolicy;
 use App\Policies\FuelLogPolicy;
 use App\Policies\VehiclePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
@@ -18,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
     protected $policies = [
         Vehicle::class => VehiclePolicy::class,
         FuelLog::class => FuelLogPolicy::class,
+        Expense::class => ExpensePolicy::class,
     ];
 
     /**

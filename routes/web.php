@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FuelLogController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\ExpenseController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -22,6 +23,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     
     // Rotte per i fuel logs
     Route::resource('fuel-logs', FuelLogController::class);
+    
+    // Rotte per le spese
+    Route::resource('expenses', ExpenseController::class);
+    Route::get('/expense-stats', [ExpenseController::class, 'stats'])->name('expenses.stats');
     
     // Rotte legacy per compatibilità
     Route::get('/fuel-stats', [FuelLogController::class, 'index'])->name('fuel.stats');
