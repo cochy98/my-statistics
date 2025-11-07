@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Models\Store;
 use App\Models\Category;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Inertia\Inertia;
@@ -18,7 +19,17 @@ class ExpenseController extends Controller
      */
     public function index(Request $request)
     {
-        $query = auth()->user()->expenses()->with(['store', 'category']);
+        $user = auth()->user();
+
+        // Query per spese create dall'utente e spese condivise
+        $query = Expense::query()
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                    ->orWhereHas('sharedUsers', function ($q) use ($user) {
+                        $q->where('users.id', $user->id);
+                    });
+            })
+            ->with(['store', 'category', 'user', 'sharedUsers']);
 
         // Filtri
         if ($request->filled('category_id')) {
@@ -51,9 +62,15 @@ class ExpenseController extends Controller
         // Dati per i filtri
         $categories = Category::orderBy('name')->get();
         $stores = Store::orderBy('name')->get();
-        
-        // Settimane disponibili
-        $weeks = auth()->user()->expenses()
+
+        // Settimane disponibili (da tutte le spese accessibili)
+        $weeks = Expense::query()
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                    ->orWhereHas('sharedUsers', function ($q) use ($user) {
+                        $q->where('users.id', $user->id);
+                    });
+            })
             ->select('week_identifier')
             ->distinct()
             ->orderBy('week_identifier', 'desc')
@@ -76,9 +93,15 @@ class ExpenseController extends Controller
         $categories = Category::orderBy('name')->get();
         $stores = Store::orderBy('name')->get();
 
+        // Ottieni tutti gli utenti tranne quello corrente per la condivisione
+        $users = User::where('id', '!=', auth()->id())
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+
         return Inertia::render('Expenses/Create', [
             'categories' => $categories,
             'stores' => $stores,
+            'users' => $users,
         ]);
     }
 
@@ -94,12 +117,27 @@ class ExpenseController extends Controller
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:1000',
+            'shared_user_ids' => 'nullable|array',
+            'shared_user_ids.*' => 'exists:users,id',
         ]);
 
         $validated['user_id'] = auth()->id();
         $validated['week_identifier'] = Expense::generateWeekIdentifier($validated['date']);
 
-        Expense::create($validated);
+        // Rimuovi shared_user_ids dai dati validati prima di creare la spesa
+        $sharedUserIds = $validated['shared_user_ids'] ?? [];
+        unset($validated['shared_user_ids']);
+
+        $expense = Expense::create($validated);
+
+        // Sincronizza gli utenti condivisi (rimuove quelli non presenti e aggiunge quelli nuovi)
+        if (!empty($sharedUserIds)) {
+            // Rimuovi l'utente corrente se presente (non può condividere con se stesso)
+            $sharedUserIds = array_filter($sharedUserIds, fn($id) => $id != auth()->id());
+            $expense->sharedUsers()->sync($sharedUserIds);
+        } else {
+            $expense->sharedUsers()->sync([]);
+        }
 
         return redirect()->route('expenses.index')
             ->with('success', 'Spesa registrata con successo!');
@@ -112,7 +150,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('view', $expense);
 
-        $expense->load(['store', 'category']);
+        $expense->load(['store', 'category', 'user', 'sharedUsers']);
 
         return Inertia::render('Expenses/Show', [
             'expense' => $expense,
@@ -129,10 +167,20 @@ class ExpenseController extends Controller
         $categories = Category::orderBy('name')->get();
         $stores = Store::orderBy('name')->get();
 
+        // Ottieni tutti gli utenti tranne quello corrente per la condivisione
+        $users = User::where('id', '!=', auth()->id())
+            ->where('id', '!=', $expense->user_id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+
+        // Carica gli utenti condivisi
+        $expense->load('sharedUsers');
+
         return Inertia::render('Expenses/Edit', [
             'expense' => $expense,
             'categories' => $categories,
             'stores' => $stores,
+            'users' => $users,
         ]);
     }
 
@@ -150,11 +198,37 @@ class ExpenseController extends Controller
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:1000',
+            'shared_user_ids' => 'nullable|array',
+            'shared_user_ids.*' => 'exists:users,id',
         ]);
 
         $validated['week_identifier'] = Expense::generateWeekIdentifier($validated['date']);
 
+        // Rimuovi shared_user_ids dai dati validati prima di aggiornare la spesa
+        $sharedUserIds = $validated['shared_user_ids'] ?? [];
+        unset($validated['shared_user_ids']);
+
+        // Carica la relazione PRIMA dell'update per preservare lo stato attuale
+        $expense->load('sharedUsers');
+        $currentUserId = auth()->id();
+        $isOwner = $expense->user_id === $currentUserId;
+
+        // Verifica se l'utente corrente è condiviso (prima dell'update)
+        $wasShared = !$isOwner && $expense->sharedUsers->contains('id', $currentUserId);
+
         $expense->update($validated);
+
+        // Sincronizza gli utenti condivisi
+        // Rimuovi l'utente corrente se presente (non può condividere con se stesso)
+        $sharedUserIds = array_filter($sharedUserIds, fn($id) => $id != $currentUserId);
+
+        // Se l'utente corrente era condiviso, dobbiamo mantenerlo nella lista
+        // per preservare la condivisione anche dopo la modifica
+        if ($wasShared) {
+            $sharedUserIds[] = $currentUserId;
+        }
+
+        $expense->sharedUsers()->sync($sharedUserIds);
 
         return redirect()->route('expenses.index')
             ->with('success', 'Spesa aggiornata con successo!');
@@ -179,16 +253,23 @@ class ExpenseController extends Controller
     public function stats(Request $request)
     {
         $user = auth()->user();
-        
+
         // Periodo di default: ultimi 3 mesi
         $defaultFrom = Carbon::now()->subMonths(3)->startOfMonth();
         $defaultTo = Carbon::now()->endOfMonth();
-        
+
         $from = $request->get('from', $defaultFrom->format('Y-m-d'));
         $to = $request->get('to', $defaultTo->format('Y-m-d'));
 
-        $expenses = $user->expenses()
-            ->with(['store', 'category'])
+        // Include sia le spese create dall'utente che quelle condivise
+        $expenses = Expense::query()
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                    ->orWhereHas('sharedUsers', function ($q) use ($user) {
+                        $q->where('users.id', $user->id);
+                    });
+            })
+            ->with(['store', 'category', 'user', 'sharedUsers'])
             ->whereBetween('date', [$from, $to])
             ->get();
 

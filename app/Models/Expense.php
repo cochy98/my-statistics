@@ -44,6 +44,12 @@ class Expense extends Model
         return $this->belongsTo(Category::class);
     }
 
+    // Relazione: una spesa può essere condivisa con più utenti (many-to-many)
+    public function sharedUsers()
+    {
+        return $this->belongsToMany(User::class, 'expense_user');
+    }
+
     // Scope per filtrare per settimana
     public function scopeForWeek($query, $weekIdentifier)
     {
@@ -79,5 +85,16 @@ class Expense extends Model
     public function getFormattedAmountAttribute()
     {
         return '€ ' . number_format($this->amount, 2, ',', '.');
+    }
+
+    // Verifica se un utente può accedere a questa spesa (proprietario o condivisa)
+    public function canBeAccessedBy(User $user): bool
+    {
+        if ($this->user_id === $user->id) {
+            return true;
+        }
+        
+        // Verifica se l'utente è nella lista degli utenti condivisi
+        return $this->sharedUsers()->where('users.id', $user->id)->exists();
     }
 }

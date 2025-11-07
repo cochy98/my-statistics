@@ -67,4 +67,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Expense::class);
     }
+
+    // Relazione: un utente può avere spese condivise con lui (many-to-many)
+    public function sharedExpenses()
+    {
+        return $this->belongsToMany(Expense::class, 'expense_user');
+    }
 }

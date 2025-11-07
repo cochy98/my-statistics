@@ -20,7 +20,7 @@ class ExpensePolicy
      */
     public function view(User $user, Expense $expense): bool
     {
-        return $user->id === $expense->user_id;
+        return $expense->canBeAccessedBy($user);
     }
 
     /**
@@ -36,7 +36,7 @@ class ExpensePolicy
      */
     public function update(User $user, Expense $expense): bool
     {
-        return $user->id === $expense->user_id;
+        return $expense->canBeAccessedBy($user);
     }
 
     /**
@@ -44,6 +44,6 @@ class ExpensePolicy
      */
     public function delete(User $user, Expense $expense): bool
     {
-        return $user->id === $expense->user_id;
+        return $expense->canBeAccessedBy($user);
     }
 }

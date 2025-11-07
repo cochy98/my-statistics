@@ -76,5 +76,7 @@ export interface Expense {
     updated_at: string;
     store?: Store;
     category?: Category;
+    user?: User;
+    shared_users?: User[];
     formatted_amount?: string;
 }

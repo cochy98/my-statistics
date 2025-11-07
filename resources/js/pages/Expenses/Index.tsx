@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Receipt, Plus, Search, Filter, Edit, Trash2, Eye, X } from 'lucide-react';
+import { Receipt, Plus, Search, Filter, Edit, Trash2, Eye, X, Users } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -45,6 +45,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ExpensesIndex({ expenses, categories, stores, weeks, filters }: ExpensesIndexProps) {
+    const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const [showFilters, setShowFilters] = useState(false);
     const [deleteExpenseId, setDeleteExpenseId] = useState<number | null>(null);
 
@@ -269,6 +270,18 @@ export default function ExpensesIndex({ expenses, categories, stores, weeks, fil
                                                     {expense.category && (
                                                         <Badge className={getCategoryColor(expense.category)}>
                                                             {expense.category.name}
+                                                        </Badge>
+                                                    )}
+                                                    {expense.user_id !== auth.user.id && (
+                                                        <Badge variant="outline" className="flex items-center gap-1">
+                                                            <Users className="h-3 w-3" />
+                                                            Condivisa
+                                                        </Badge>
+                                                    )}
+                                                    {expense.shared_users && expense.shared_users.length > 0 && expense.user_id === auth.user.id && (
+                                                        <Badge variant="outline" className="flex items-center gap-1">
+                                                            <Users className="h-3 w-3" />
+                                                            Condivisa ({expense.shared_users.length})
                                                         </Badge>
                                                     )}
                                                 </div>

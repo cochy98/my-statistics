@@ -9,13 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Receipt } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { type Expense, type Store, type Category } from '@/types';
+import { type Expense, type Store, type Category, type User } from '@/types';
+import { MultiSelect, type MultiSelectOption } from '@/components/ui/multi-select';
 import { PageMain } from '@/components/page-main';
 
 interface ExpenseEditProps {
     expense: Expense;
     categories: Category[];
     stores: Store[];
+    users: User[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -33,7 +35,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function ExpenseEdit({ expense, categories, stores }: ExpenseEditProps) {
+export default function ExpenseEdit({ expense, categories, stores, users }: ExpenseEditProps) {
     const { data, setData, put, processing, errors } = useForm({
         store_id: expense.store_id?.toString() || '',
         category_id: expense.category_id?.toString() || '',
@@ -41,7 +43,17 @@ export default function ExpenseEdit({ expense, categories, stores }: ExpenseEdit
         amount: expense.amount.toString(),
         description: expense.description || '',
         notes: expense.notes || '',
+        shared_user_ids: expense.shared_users?.map(u => u.id) || [],
     });
+
+    const userOptions: MultiSelectOption[] = users.map(user => ({
+        label: `${user.name} (${user.email})`,
+        value: user.id,
+    }));
+
+    const handleUsersChange = (selectedIds: (string | number)[]) => {
+        setData('shared_user_ids', selectedIds as number[]);
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -203,6 +215,27 @@ export default function ExpenseEdit({ expense, categories, stores }: ExpenseEdit
                                         <p className="text-sm text-red-500">{errors.notes}</p>
                                     )}
                                 </div>
+
+                                {/* Condivisione */}
+                                {users.length > 0 && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="shared_users">Condividi con</Label>
+                                        <MultiSelect
+                                            options={userOptions}
+                                            selected={data.shared_user_ids}
+                                            onChange={handleUsersChange}
+                                            placeholder="Seleziona utenti con cui condividere..."
+                                            searchPlaceholder="Cerca utenti..."
+                                            error={!!errors.shared_user_ids}
+                                        />
+                                        {errors.shared_user_ids && (
+                                            <p className="text-sm text-red-500">{errors.shared_user_ids}</p>
+                                        )}
+                                        <p className="text-sm text-muted-foreground">
+                                            Seleziona gli utenti con cui vuoi condividere questa spesa
+                                        </p>
+                                    </div>
+                                )}
 
                                 {/* Pulsanti */}
                                 <div className="flex items-center gap-4 pt-4">
