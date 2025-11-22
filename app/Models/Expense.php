@@ -13,6 +13,7 @@ class Expense extends Model
     protected $fillable = [
         'user_id',
         'store_id',
+        'store_location_id',
         'category_id',
         'date',
         'week_identifier',
@@ -32,10 +33,16 @@ class Expense extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Relazione: una spesa appartiene a un negozio
+    // Relazione: una spesa appartiene a un negozio (retrocompatibilità)
     public function store()
     {
         return $this->belongsTo(Store::class);
+    }
+
+    // Relazione: una spesa appartiene a una sede del negozio
+    public function storeLocation()
+    {
+        return $this->belongsTo(StoreLocation::class);
     }
 
     // Relazione: una spesa appartiene a una categoria

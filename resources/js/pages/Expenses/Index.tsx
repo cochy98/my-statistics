@@ -298,7 +298,14 @@ export default function ExpensesIndex({ expenses, categories, stores, weeks, fil
                                                     {expense.store && (
                                                         <div className="flex items-center gap-2">
                                                             <span className="font-medium">Negozio:</span>
-                                                            <span>{expense.store.name}</span>
+                                                            <span>
+                                                                {expense.store.name}
+                                                                {expense.store_location && (
+                                                                    <span className="text-muted-foreground ml-1">
+                                                                        - {expense.store_location.name || expense.store_location.city || 'Sede'}
+                                                                    </span>
+                                                                )}
+                                                            </span>
                                                         </div>
                                                     )}
                                                     

@@ -3,6 +3,7 @@
 use App\Http\Controllers\FuelLogController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\StoreController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
@@ -27,6 +28,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Rotte per le spese
     Route::resource('expenses', ExpenseController::class);
     Route::get('/expense-stats', [ExpenseController::class, 'stats'])->name('expenses.stats');
+    
+    // Rotte per i negozi
+    Route::resource('stores', StoreController::class);
+    Route::post('/stores/{store}/locations', [StoreController::class, 'storeLocation'])->name('stores.locations.store');
+    Route::put('/stores/{store}/locations/{location}', [StoreController::class, 'updateLocation'])->name('stores.locations.update');
+    Route::delete('/stores/{store}/locations/{location}', [StoreController::class, 'destroyLocation'])->name('stores.locations.destroy');
     
     // Rotte legacy per compatibilità
     Route::get('/fuel-stats', [FuelLogController::class, 'index'])->name('fuel.stats');

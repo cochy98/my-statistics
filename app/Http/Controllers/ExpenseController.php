@@ -29,7 +29,7 @@ class ExpenseController extends Controller
                         $q->where('users.id', $user->id);
                     });
             })
-            ->with(['store', 'category', 'user', 'sharedUsers']);
+            ->with(['store', 'storeLocation', 'category', 'user', 'sharedUsers']);
 
         // Filtri
         if ($request->filled('category_id')) {
@@ -61,7 +61,7 @@ class ExpenseController extends Controller
 
         // Dati per i filtri
         $categories = Category::orderBy('name')->get();
-        $stores = Store::orderBy('name')->get();
+        $stores = Store::with('locations')->orderBy('name')->get();
 
         // Settimane disponibili (da tutte le spese accessibili)
         $weeks = Expense::query()
@@ -91,7 +91,7 @@ class ExpenseController extends Controller
     public function create()
     {
         $categories = Category::orderBy('name')->get();
-        $stores = Store::orderBy('name')->get();
+        $stores = Store::with('locations')->orderBy('name')->get();
 
         // Ottieni tutti gli utenti tranne quello corrente per la condivisione
         $users = User::where('id', '!=', auth()->id())
@@ -112,6 +112,7 @@ class ExpenseController extends Controller
     {
         $validated = $request->validate([
             'store_id' => 'nullable|exists:stores,id',
+            'store_location_id' => 'nullable|exists:store_locations,id',
             'category_id' => 'nullable|exists:categories,id',
             'date' => 'required|date',
             'amount' => 'required|numeric|min:0.01',
@@ -150,7 +151,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('view', $expense);
 
-        $expense->load(['store', 'category', 'user', 'sharedUsers']);
+        $expense->load(['store', 'storeLocation', 'category', 'user', 'sharedUsers']);
 
         return Inertia::render('Expenses/Show', [
             'expense' => $expense,
@@ -165,7 +166,7 @@ class ExpenseController extends Controller
         $this->authorize('update', $expense);
 
         $categories = Category::orderBy('name')->get();
-        $stores = Store::orderBy('name')->get();
+        $stores = Store::with('locations')->orderBy('name')->get();
 
         // Ottieni tutti gli utenti tranne quello corrente per la condivisione
         $users = User::where('id', '!=', auth()->id())
@@ -193,6 +194,7 @@ class ExpenseController extends Controller
 
         $validated = $request->validate([
             'store_id' => 'nullable|exists:stores,id',
+            'store_location_id' => 'nullable|exists:store_locations,id',
             'category_id' => 'nullable|exists:categories,id',
             'date' => 'required|date',
             'amount' => 'required|numeric|min:0.01',
@@ -269,7 +271,7 @@ class ExpenseController extends Controller
                         $q->where('users.id', $user->id);
                     });
             })
-            ->with(['store', 'category', 'user', 'sharedUsers'])
+            ->with(['store', 'storeLocation', 'category', 'user', 'sharedUsers'])
             ->whereBetween('date', [$from, $to])
             ->get();
 

@@ -42,6 +42,24 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
+export interface StoreLocation {
+    id: number;
+    store_id: number;
+    name: string | null;
+    address: string | null;
+    city: string | null;
+    province: string | null;
+    postal_code: string | null;
+    phone: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    notes: string | null;
+    is_default: boolean;
+    created_at: string;
+    updated_at: string;
+    full_address?: string;
+}
+
 export interface Store {
     id: number;
     name: string;
@@ -49,6 +67,7 @@ export interface Store {
     description: string | null;
     created_at: string;
     updated_at: string;
+    locations?: StoreLocation[];
 }
 
 export interface Category {
@@ -66,6 +85,7 @@ export interface Expense {
     id: number;
     user_id: number;
     store_id: number | null;
+    store_location_id: number | null;
     category_id: number | null;
     date: string;
     week_identifier: string;
@@ -75,6 +95,7 @@ export interface Expense {
     created_at: string;
     updated_at: string;
     store?: Store;
+    store_location?: StoreLocation;
     category?: Category;
     user?: User;
     shared_users?: User[];

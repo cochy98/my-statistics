@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Receipt } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { type Store, type Category, type User } from '@/types';
+import { type Store, type StoreLocation, type Category, type User } from '@/types';
 import { MultiSelect, type MultiSelectOption } from '@/components/ui/multi-select';
 import { PageMain } from '@/components/page-main';
 
@@ -37,6 +37,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function ExpenseCreate({ categories, stores, users }: ExpenseCreateProps) {
     const { data, setData, post, processing, errors } = useForm({
         store_id: '',
+        store_location_id: '',
         category_id: '',
         date: new Date().toISOString().split('T')[0], // Data odierna
         amount: '',
@@ -45,6 +46,10 @@ export default function ExpenseCreate({ categories, stores, users }: ExpenseCrea
         shared_user_ids: [] as number[],
     });
 
+    // Ottieni le sedi del negozio selezionato
+    const selectedStore = stores.find(s => s.id.toString() === data.store_id);
+    const availableLocations = selectedStore?.locations || [];
+
     const userOptions: MultiSelectOption[] = users.map(user => ({
         label: `${user.name} (${user.email})`,
         value: user.id,
@@ -52,6 +57,20 @@ export default function ExpenseCreate({ categories, stores, users }: ExpenseCrea
 
     const handleUsersChange = (selectedIds: (string | number)[]) => {
         setData('shared_user_ids', selectedIds as number[]);
+    };
+
+    const handleStoreChange = (storeId: string) => {
+        setData('store_id', storeId);
+        // Reset della sede quando si cambia negozio
+        setData('store_location_id', '');
+    };
+
+    const getLocationLabel = (location: StoreLocation): string => {
+        const parts: string[] = [];
+        if (location.name) parts.push(location.name);
+        if (location.city) parts.push(location.city);
+        if (location.province) parts.push(location.province);
+        return parts.length > 0 ? parts.join(' - ') : `Sede #${location.id}`;
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -134,7 +153,7 @@ export default function ExpenseCreate({ categories, stores, users }: ExpenseCrea
                                         <Label htmlFor="store_id">Negozio</Label>
                                         <Select
                                             value={data.store_id || undefined}
-                                            onValueChange={(value) => setData('store_id', value)}
+                                            onValueChange={handleStoreChange}
                                         >
                                             <SelectTrigger className={errors.store_id ? 'border-red-500' : ''}>
                                                 <SelectValue placeholder="Seleziona un negozio" />
@@ -151,6 +170,31 @@ export default function ExpenseCreate({ categories, stores, users }: ExpenseCrea
                                             <p className="text-sm text-red-500">{errors.store_id}</p>
                                         )}
                                     </div>
+
+                                    {/* Sede del Negozio */}
+                                    {selectedStore && availableLocations.length > 0 && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="store_location_id">Sede</Label>
+                                            <Select
+                                                value={data.store_location_id || undefined}
+                                                onValueChange={(value) => setData('store_location_id', value)}
+                                            >
+                                                <SelectTrigger className={errors.store_location_id ? 'border-red-500' : ''}>
+                                                    <SelectValue placeholder="Seleziona una sede" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {availableLocations.map((location) => (
+                                                        <SelectItem key={location.id} value={location.id.toString()}>
+                                                            {getLocationLabel(location)}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            {errors.store_location_id && (
+                                                <p className="text-sm text-red-500">{errors.store_location_id}</p>
+                                            )}
+                                        </div>
+                                    )}
 
                                     {/* Categoria */}
                                     <div className="space-y-2">

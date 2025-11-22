@@ -15,10 +15,22 @@ class Store extends Model
         'description',
     ];
 
-    // Relazione: un negozio può avere molte spese
+    // Relazione: un negozio può avere molte spese (tramite le sedi)
     public function expenses()
     {
-        return $this->hasMany(Expense::class);
+        return $this->hasManyThrough(Expense::class, StoreLocation::class);
+    }
+
+    // Relazione: un negozio può avere più sedi
+    public function locations()
+    {
+        return $this->hasMany(StoreLocation::class);
+    }
+
+    // Relazione: sede principale (default)
+    public function defaultLocation()
+    {
+        return $this->hasOne(StoreLocation::class)->where('is_default', true);
     }
 
     // Scope per cercare negozi per tipo

@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FuelLogSeeder::class,
             CategorySeeder::class,
-            ExpenseSeeder::class,
+            StoreSeeder::class,
         ]);
     }
 }
