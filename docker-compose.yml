@@ -1,10 +1,14 @@
 services:
-  nginx:
+  my_statistics_nginx:
     image: nginx:alpine
     container_name: my_statistics_nginx
     restart: always
-    ports:
-      - 80:80
+    # ports:
+      #- 80:80
+    networks:
+      - proxy
+    depends_on:
+      - laravel
     volumes:
       - ./:/var/www
       - ./nginx:/etc/nginx/conf.d/
@@ -17,11 +21,15 @@ services:
       - ./:/var/www
     depends_on:
       - mysql
+    networks:
+      - default
+      - proxy
   mysql:
-    image: beercan1989/arm-mysql:latest
+    image: 'mysql:8.0'
     container_name: my_statistics_db
     restart: always
     environment:
+      # - MYSQL_ROOT_HOST='%'
       - MYSQL_USER=${DB_USERNAME}
       - MYSQL_DATABASE=${DB_DATABASE} 
       - MYSQL_PASSWORD=${DB_PASSWORD}
@@ -40,3 +48,6 @@ services:
 volumes:
   my_statistics-db:
     driver: local
+networks:
+  proxy:
+    external: true
